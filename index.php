@@ -1,125 +1,69 @@
-<?php
-// On importe bien le SDK Facebook
-require_once 'php-graph-sdk-5.0.0/src/Facebook/Facebook.php';
-require_once 'php-graph-sdk-5.0.0/src/Facebook/autoload.php';
-// Vous devez impérativement créer une instance d'application en y 
-// paramétrant votre AppID et votre clé secrète disponible 
-// dans le tableau de bord de votre application
-$facebook = new Facebook(array(
-  'appId'  => '302598076841406',
-  'secret' => 'e2db62320fb2540967c4e3258d6c2490',
-));
-// On essaye ensuite de récupérer l'utilisateur identifié au moyen de 
-// la méthode getUser()
-$user = $facebook->getUser();
-// Si l'objet $user est défini, cela veut dire que l'utilisateur est 
-// bien identifié sur facebook, reste à déterminer s'il est identifié 
-// sur notre application
-if ($user) {
-  try {
-    // On va tenter de récupérer les données de l'utilisateur au moyen 
-    // de la méthode api()
-    // Les données publiques
-    $user_profile = $facebook->api('/me'); 
-    // La photo de profil
-    $user_picture = $facebook->api('/me/picture?redirect=false&height=128&type=normal&width=128'); 
-    // La photo de couverture
-    $user_cover = $facebook->api('/me?fields=cover');  
-  } catch (FacebookApiException $e) {
-    // Si l'utilisateur n'est pas authentifié sur notre application, 
-    // une exception est remontée.
-    error_log($e);
-    $user = null;
-  }
-}
-// En fonction du statut de connexion de l'utilisateur, on récupère 
-// une URL de connexion ou de déconnexion
-if ($user) {
-  // On passe en paramètre l'URL absolue de la page vers laquelle 
-  // l'utilisateur est redirigé après déconnexion, arbitrairement 
-  // l'accueil de Facebook
-  $logoutUrl = $facebook->getLogoutUrl(array(
-    'next' => 'https://www.facebook.com'
-  ));
-} else {
-  // On passe en paramètre l'URL absolue de la page vers laquelle 
-  // l'utilisateur est redirigé après connexion, ici notre app
-  $loginUrl = $facebook->getLoginUrl(array(
-    'redirect_uri' => 'https://apps.facebook.com/demotreizepixels/'
-  ));
-}
+
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/2.1.3/jquery.min.js"></script>
+<script src="index.js"></script>
+Lien de la page: <input type="text" name="fname"><br>
+
+
+<script type="text/javascript">
+      
+    var element = document.getElementById('input');
+    console.log(element);
+  
+    </script>
+<?php 
+
+
+
+
+	
+
+session_start();
+require_once __DIR__ . '/Facebook/autoload.php';
+$fb = new \Facebook\Facebook([
+  'app_id' => '302598076841406',
+  'app_secret' => 'e2db62320fb2540967c4e3258d6c2490',
+  'default_graph_version' => 'v2.8',
+]);
+   $permissions = ['']; // optional
+   $helper = $fb->getRedirectLoginHelper();
+   $accessToken = $helper->getAccessToken();
+   
+
+	
+ 		$url = "https://graph.facebook.com/v2.8/197875396963676?fields=name,id,about,description,link&access_token=181182242224859|6b420d60a65a990be00082571c32b382";
+		$headers = array("Content-type: application/json");
+		
+			 
+		 $ch = curl_init();
+		 curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
+		 curl_setopt($ch, CURLOPT_URL, $url);
+	         curl_setopt($ch, CURLOPT_FOLLOWLOCATION, 1);  
+		 curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);  
+		 curl_setopt($ch, CURLOPT_COOKIEJAR,'cookie.txt');  
+		 curl_setopt($ch, CURLOPT_COOKIEFILE,'cookie.txt');  
+		 curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);  
+		 curl_setopt($ch, CURLOPT_USERAGENT, "Mozilla/5.0 (Windows; U; Windows NT 5.1; en-US; rv:1.8.1.3) Gecko/20070309 Firefox/2.0.0.3"); 
+		 curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false); 
+		   
+		 $st=curl_exec($ch); 
+		 $result=json_decode($st,TRUE);
+		  echo "<pre>";
+		  var_dump($result);
+		//$fbUser = $facebook->api('/197875396963676');
+	 	//var_dump($fbUser);
+	        //print_r($fbUser);
+ 	        //$events = $facebook->api('197875396963676?fields=events.limit(5){name,cover,start_time}');
+		//echo $event['name'];   
+	    	//print_r($events);
+
+
+		foreach($result as $data){
+  	 		 echo'- '.$data.'<br/>';
+		}
+		// echo "Evenements :".$result['events']['data'][1]."<br>";
+		 echo "</center>";
+		 
+		
+
+	
 ?>
-
-<!doctype html>
-<html>
-  <head>
-    <title>Ma première application Facebook</title>   
-    <meta charset="UTF-8">
-  </head>
-  <body>
-
-    <?php if ($user): ?>
-      <div>
-        <!-- On affiche les informations de l'utilisateur -->                
-        <h1>Vos informations publiques</h1>    
-        <table>
-          <thead>
-            <tr>
-              <th>Paramètre</th>
-              <th>Valeur</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr>
-                <td>ID</td>
-                <td><?php echo $user_profile['id']; ?></td>
-            </tr>
-            <tr>
-                <td>Prénom</td>
-                <td><?php echo $user_profile['first_name']; ?></td>
-            </tr>
-            <tr>
-                <td>Nom</td>
-                <td>
-                  <?php echo $user_profile['last_name']; ?>
-                </td>
-            </tr>   
-            <tr>
-                <td>Photo de profil</td>
-                <td>
-                  <img src="<?php echo $user_picture['data']['url'] ?>" />
-                </td>
-            </tr>  
-            <tr>
-                <td>Photo de couverture</td>
-                <td>
-                  <img src="<?php echo $user_cover['cover']['source'] ?>" />
-                </td>
-            </tr>  
-          </tbody>
-        </table>
-      </div>        
-    <?php endif ?>
-
-    <div style="margin-top:20px;">
-      <?php if ($user): ?>
-        <!-- Bouton de déconnexion de l'application ET facebook -->
-        <!-- 
-        Pour éviter des problèmes liés à la sécurité des iframes, 
-        n'oubliez pas l'attribut target="_top" 
-        sur les liens de redirection. 
-        -->
-        <a target="_top" href="<?php echo $logoutUrl; ?>">Déconnexion</a>
-      <?php else: ?>
-        <!-- Bouton de connexion à l'application -->
-        <!-- 
-        Pour éviter des problèmes liés à la sécurité des iframes, 
-        n'oubliez pas l'attribut target="_top" 
-        sur les liens de redirection.
-        -->
-        <a target="_top" href="<?php echo $loginUrl; ?>">Connexion</a>
-      <?php endif ?>
-    </div>
-
-  </body>
-</html>
